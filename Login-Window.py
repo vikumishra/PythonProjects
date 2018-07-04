@@ -4,7 +4,11 @@ import tkinter.scrolledtext as tkst
 from tkinter import messagebox
 conn=sqlite3.connect("Project1.db")
 print("Database Created")
+#conn.execute("create table Notes(Id INTEGER PRIMARY KEY ,Title TEXT,Content TEXT,Priority INTEGER)")
 
+
+
+cur=conn.cursor()
 
 class login:
     def __init__(self,root):
@@ -40,17 +44,18 @@ class login:
         self.TopFrame = Frame(self.root, width=500, height=250)
         self.BottomFrame = Frame(self.root, width=500, height=250)
         self.btnAddNewNotes = Button(self.TopFrame, text="Add New Notes>>", fg="white", bg="red", font="dark", bd=7,command=self.AddNewNotes)
-        self.btnListAllNotes = Button(self.TopFrame, text="List All Notes", fg="white", bg="red", font="dark", bd=7)
+        self.btnListAllNotes = Button(self.TopFrame, text="List All Notes", fg="white", bg="red", font="dark", bd=7,command=self.ListAllNotes)
         self.lblSearchNotes = Label(self.TopFrame, text="Search Notes", font="dark")
         self.EntrySearchNotes = Entry(self.TopFrame, width=60)
         self.btnSearch = Button(self.TopFrame, text="Search", width=10, fg="white", bg="red", font="dark", bd=5)
         self.lblNotes = Label(self.TopFrame, text="--Notes--", font="bold")
 
+
         self.scrollbar = Scrollbar(self.BottomFrame)
         self.scrollbar.pack(side=RIGHT, fill=Y)
         self.myList = Listbox(self.BottomFrame, yscrollcommand=self.scrollbar.set, width=500, height=250)
-        for line in range(100):
-            self.myList.insert(END, "This is line number " + str(line))
+        #for line in range(100):
+         #   self.myList.insert(END, "This is line number " + str(line))
         self.myList.pack(side=LEFT, fill=X)
         self.scrollbar.config(command=self.myList.yview)
 
@@ -66,16 +71,21 @@ class login:
 
     def AddNewNotes(self):
         self.root1 = Tk()
-        self.root1.geometry("750x750")
+        self.root1.geometry("750x800")
         self.root1.title("ADD NEW NOTES")
         self.top1frame = Frame(self.root1)
         self.lblAddNewNotes = Label(self.top1frame, text="ADD NEW NOTES", height=3, width=20, font=('times',20,'bold'), fg="blue")
+        self.lblId=Label(self.top1frame,text="ID",font="bold")
+        self.EntryId=Entry(self.top1frame,width=80)
         self.lblTitle = Label(self.top1frame, text="TITLE", font="bold")
         self.entryTitle = Entry(self.top1frame, width=80)
         self.labelContent = Label(self.top1frame, text="CONTENT", font=('times',15,'bold'), height=3, width=20)
+        self.lblpriority=Label(self.top1frame,text="PRIORITY",font=('times',15,'bold'))
+        self.EntryPriority=Entry(self.top1frame,width=80)
+
 
         self.btnBack = Button(self.top1frame, text="BACK", bd=7, bg='yellow', font='bold',command=self.Back)
-        self.btnSave = Button(self.top1frame, text="SAVE", bd=7, bg='light green', font='bold')
+        self.btnSave = Button(self.top1frame, text="SAVE", bd=7, bg='light green', font='bold',command=self.Add)
         self.btnExit = Button(self.top1frame, text="CANCEL", bd=7, bg='red', font='bold',command=self.Ext)
         self.editArea = tkst.ScrolledText(self.top1frame, wrap='word', bg='beige')
 
@@ -84,13 +94,18 @@ class login:
 
         self.top1frame.pack(side=TOP)
         self.lblAddNewNotes.grid(row=0, columnspan=2)
-        self.lblTitle.grid(row=1, column=0)
-        self.entryTitle.grid(row=1, column=1, ipady=8)
-        self.labelContent.grid(row=2, columnspan=2, pady=10)
+        self.lblId.grid(row=1,column=0,pady=8)
+        self.EntryId.grid(row=1,column=1,pady=8,ipady=4)
+        self.lblTitle.grid(row=2, column=0)
+        self.lblpriority.grid(row=3,column=0,pady=8)
+        self.EntryPriority.grid(row=3,column=1,pady=8,ipady=4)
+
+        self.entryTitle.grid(row=2, column=1, ipady=4)
+        self.labelContent.grid(row=4, columnspan=2, pady=10)
         self.editArea.grid(row=5, columnspan=3)
-        self.btnExit.grid(row=6, column=1, pady=40)
-        self.btnSave.grid(row=6, column=2, pady=40)
-        self.btnBack.grid(row=6, column=0, pady=40)
+        self.btnExit.grid(row=6, column=1, pady=10)
+        self.btnSave.grid(row=6, column=2, pady=10)
+        self.btnBack.grid(row=6, column=0, pady=10)
 
         self.root1.mainloop()
 
@@ -102,9 +117,27 @@ class login:
         master=Tk()
         self.__init__(master)
 
+    def Add(self):
+        id=self.EntryId.get()
+        title=self.entryTitle.get()
+        priority=int(self.EntryPriority.get())
+        content=str(self.editArea.get(1.0,END))
+        cur.execute('Insert INTO Notes Values(?,?,?,?);',(id,title,content,priority))
+        print("Value Inserted")
+
+    def ListAllNotes(self):
+        cur.execute("Select * from Notes")
+        i=1
+        for row in cur:
+            self.myList.insert(1,row[1])
+            i=i+1
+
+
 
 
 
 master=Tk()
 b=login(master)
 master.mainloop()
+
+conn.commit()
